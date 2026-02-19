@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class ShipmentService {
-    ShipmentRepository shipmentRepository;
+    private final ShipmentRepository shipmentRepository;
 
     @Autowired
     public ShipmentService(ShipmentRepository shipmentRepository) {

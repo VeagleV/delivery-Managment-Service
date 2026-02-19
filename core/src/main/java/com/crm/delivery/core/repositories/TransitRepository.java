@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface TransitRepository extends JpaRepository<Transit, Integer> {
-    List<Transit> findByRequestId(int requestId);
+    List<Transit> findByRouteId(int routeId);
 }

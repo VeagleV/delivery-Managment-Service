@@ -8,6 +8,8 @@ import com.crm.delivery.core.enums.Status;
 import com.crm.delivery.core.mappers.RequestMappers;
 import com.crm.delivery.core.repositories.RequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,8 +18,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class RequestService {
-    RequestRepository requestRepository;
-    ShipmentService shipmentService;
+    private final RequestRepository requestRepository;
+    private final ShipmentService shipmentService;
 
     @Autowired
     public RequestService(RequestRepository requestRepository, ShipmentService shipmentService) {
@@ -27,24 +29,26 @@ public class RequestService {
 
 
     // GET-запросы
-    public RequestResponse getRequest(Integer id) {
+    public ResponseEntity<RequestResponse> getRequest(Integer id) {
         Optional<Request> request = requestRepository.findById(id);
-        return request.stream()
+        return new ResponseEntity<>( request.stream()
                 .map(RequestMappers::createRequestResponse)
                 .findFirst()
-                .orElse(null);
+                .orElse(null),
+                HttpStatus.OK);
     }
 
-    public List<RequestResponse> getAllRequests() {
-        return requestRepository.findAll().stream()
+    public ResponseEntity<List<RequestResponse>> getAllRequests() {
+        return  new ResponseEntity<>(requestRepository.findAll().stream()
                 .map(RequestMappers::createRequestResponse)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()),
+                HttpStatus.OK);
     }
 
 
 
     //POST-запросы
-    public RequestResponse createRequest(RequestRequest requestRequest, Integer userId) {
+    public ResponseEntity<RequestResponse> createRequest(RequestRequest requestRequest, Integer userId) {
         Request newRequest = new Request();
         newRequest.setWarehouseId(requestRequest.getWarehouseId());
         newRequest.setStatus(Status.PENDING);
@@ -56,7 +60,24 @@ public class RequestService {
         for(ShipmentRequest shipmentRequest : shipments) {
             shipmentService.createShipment(shipmentRequest, request);
         }
-
-        return RequestMappers.createRequestResponse(request);
+        return new ResponseEntity<RequestResponse> (RequestMappers.createRequestResponse(request), HttpStatus.CREATED);
     }
+
+    //PUT
+    public ResponseEntity<RequestResponse> updateRequestStatus(Integer requestId, Status status) {
+        Request request = requestRepository.findById(requestId).orElse(null);
+        if(request == null) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        request.setStatus(status);
+        Request puttedRequests = requestRepository.save(request);
+        return new ResponseEntity<>(RequestMappers.createRequestResponse(puttedRequests), HttpStatus.NO_CONTENT);
+    }
+
+    //DELETE
+    public ResponseEntity<RequestResponse> deleteRequest(Integer requestId) {
+        Request request = requestRepository.findById(requestId).orElse(null);
+        if(request == null) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        requestRepository.delete(request);
+        return new ResponseEntity<>(RequestMappers.createRequestResponse(request), HttpStatus.NO_CONTENT);
+    }
+
 }

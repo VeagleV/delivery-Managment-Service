@@ -17,10 +17,15 @@ public class Transit {
     @Column(name = "transit_id")
     private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "request_id")
-    private Request request;
+    @Column(name = "route_id")
+    private Integer routeId;
 
-    @Column(name = "warehouse_src")
-    private Integer warehouseSrc;
+    @Column(name = "distance")
+    private Double distance;
+
+    @Column(name = "cost")
+    private Double cost;
+
+    @Column(name = "time", columnDefinition = "INTERVAL")
+    private Duration time;
 }
