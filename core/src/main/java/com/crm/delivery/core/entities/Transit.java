@@ -23,14 +23,4 @@ public class Transit {
 
     @Column(name = "warehouse_src")
     private Integer warehouseSrc;
-
-    @Column(nullable = false)
-    private Double distance;
-
-    @Column(nullable = false)
-    private Double cost;
-
-    @Column(name = "time", nullable = false)
-    private Duration time;
-
 }
