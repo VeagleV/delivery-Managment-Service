@@ -31,6 +31,7 @@ public class RequestService {
     // GET-запросы
     public ResponseEntity<RequestResponse> getRequest(Integer id) {
         Optional<Request> request = requestRepository.findById(id);
+        if (request.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         return new ResponseEntity<>( request.stream()
                 .map(RequestMappers::createRequestResponse)
                 .findFirst()
