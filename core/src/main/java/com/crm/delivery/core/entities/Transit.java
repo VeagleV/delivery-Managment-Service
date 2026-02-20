@@ -2,11 +2,8 @@ package com.crm.delivery.core.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.time.Duration;
-import java.util.Date;
 
 @Data
 @Entity
@@ -17,20 +14,15 @@ public class Transit {
     @Column(name = "transit_id")
     private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "request_id")
-    private Request request;
+    @Column(name = "route_id")
+    private Integer routeId;
 
-    @Column(name = "warehouse_src")
-    private Integer warehouseSrc;
-
-    @Column(nullable = false)
+    @Column(name = "distance")
     private Double distance;
 
-    @Column(nullable = false)
+    @Column(name = "cost")
     private Double cost;
 
-    @Column(name = "time", nullable = false)
+    @Column(name = "time", columnDefinition = "INTERVAL")
     private Duration time;
-
 }
