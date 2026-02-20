@@ -2,11 +2,8 @@ package com.crm.delivery.core.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.time.Duration;
-import java.util.Date;
 
 @Data
 @Entity
