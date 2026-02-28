@@ -1,5 +1,6 @@
 package com.crm.delivery.core.services;
 
+import com.crm.delivery.core.dto.AlgoRequest;
 import com.crm.delivery.core.dto.RequestRequest;
 import com.crm.delivery.core.dto.RequestResponse;
 import com.crm.delivery.core.dto.ShipmentRequest;
@@ -8,6 +9,7 @@ import com.crm.delivery.core.enums.Status;
 import com.crm.delivery.core.mappers.RequestMappers;
 import com.crm.delivery.core.repositories.RequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,16 +17,18 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@EnableFeignClients
 public class RequestService {
     private final RequestRepository requestRepository;
     private final ShipmentService shipmentService;
+    private final AlgoService algoService;
 
     @Autowired
-    public RequestService(RequestRepository requestRepository, ShipmentService shipmentService) {
+    public RequestService(RequestRepository requestRepository, ShipmentService shipmentService, AlgoService algoService) {
         this.requestRepository = requestRepository;
         this.shipmentService = shipmentService;
+        this.algoService = algoService;
     }
-
 
     // GET-запросы
     public RequestResponse getRequest(Integer id) {
@@ -51,6 +55,15 @@ public class RequestService {
         for(ShipmentRequest shipmentRequest : shipments) {
             shipmentService.createShipment(shipmentRequest, createdRequest);
         }
+
+        AlgoRequest algoRequest = AlgoRequest.builder()
+                .warehouseId(requestRequest.getWarehouseId())
+                .condition(requestRequest.getCondition())
+                .shipmentRequestList(requestRequest.getShipments())
+                .build();
+
+        algoService.startAlgorithm(algoRequest);
+
         return RequestMappers.createRequestResponse(createdRequest);
     }
 
