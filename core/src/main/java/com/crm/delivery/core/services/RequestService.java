@@ -123,6 +123,8 @@ public class RequestService {
             ShipmentRequest shipment = new ShipmentRequest();
             shipment.setItemId((int) row.getCell(0).getNumericCellValue());
             shipment.setQuantity((int) row.getCell(1).getNumericCellValue());
+            System.out.println(row.getCell(0).getNumericCellValue());
+            System.out.println(row.getCell(1).getNumericCellValue());
 
             shipments.add(shipment);
         }

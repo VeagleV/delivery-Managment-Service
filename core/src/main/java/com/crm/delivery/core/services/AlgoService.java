@@ -5,8 +5,8 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 
-@FeignClient(name = "algorithm-Service", url = "http://localhost:8082/api/algo")
+@FeignClient(name = "algorithm-Service")
 public interface AlgoService {
-    @PostMapping("/startAlgorithm")
+    @PostMapping("/api/algo/startAlgorithm")
     ResponseEntity<?> startAlgorithm(AlgoRequest algoRequest);
 }
