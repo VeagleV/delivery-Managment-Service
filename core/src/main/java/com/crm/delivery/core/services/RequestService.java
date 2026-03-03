@@ -5,13 +5,25 @@ import com.crm.delivery.core.dto.RequestRequest;
 import com.crm.delivery.core.dto.RequestResponse;
 import com.crm.delivery.core.dto.ShipmentRequest;
 import com.crm.delivery.core.entities.Request;
+import com.crm.delivery.core.enums.Condition;
 import com.crm.delivery.core.enums.Status;
 import com.crm.delivery.core.mappers.RequestMappers;
 import com.crm.delivery.core.repositories.RequestRepository;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -49,7 +61,23 @@ public class RequestService {
     }
 
     //POST-запросы
-    public RequestResponse createRequest(RequestRequest requestRequest, Integer userId) {
+    public RequestResponse createRequest(Integer userId, Integer warehouseId, Condition condition, MultipartFile file) {
+
+        XSSFWorkbook workbook = null;
+        try {
+            workbook = new XSSFWorkbook(file.getInputStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        List<ShipmentRequest> shipmentRequestList = processFile(workbook);
+
+        RequestRequest requestRequest = RequestRequest.builder()
+                .warehouseId(warehouseId)
+                .condition(condition)
+                .shipments(shipmentRequestList)
+                .build();
+
         Request createdRequest = requestRepository.save(RequestMappers.createRequest(requestRequest, userId));
         List<ShipmentRequest> shipments = requestRequest.getShipments();
         for(ShipmentRequest shipmentRequest : shipments) {
@@ -82,6 +110,23 @@ public class RequestService {
         if(request == null) return null;
         requestRepository.delete(request);
         return RequestMappers.createRequestResponse(request);
+    }
+
+    public List<ShipmentRequest> processFile(XSSFWorkbook file) {
+        Sheet shipmentsSheet = file.getSheetAt(0);
+        List<ShipmentRequest> shipments = new ArrayList<>();
+
+        for (int i = 1; i <= shipmentsSheet.getLastRowNum(); i++) {
+            Row row = shipmentsSheet.getRow(i);
+
+            ShipmentRequest shipment = new ShipmentRequest();
+            shipment.setItemId((int) row.getCell(0).getNumericCellValue());
+            shipment.setQuantity((int) row.getCell(1).getNumericCellValue());
+
+            shipments.add(shipment);
+        }
+
+        return shipments;
     }
 
 }
