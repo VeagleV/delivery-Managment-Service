@@ -85,6 +85,7 @@ public class RequestService {
         }
 
         AlgoRequest algoRequest = AlgoRequest.builder()
+                .requestId(createdRequest.getId())
                 .warehouseId(requestRequest.getWarehouseId())
                 .condition(requestRequest.getCondition())
                 .shipmentRequestList(requestRequest.getShipments())

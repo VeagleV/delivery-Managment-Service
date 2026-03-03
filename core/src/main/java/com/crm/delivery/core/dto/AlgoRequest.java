@@ -18,6 +18,9 @@ import java.util.List;
 @Builder
 public class AlgoRequest {
 
+    @JsonProperty("request_id")
+    private Integer requestId;
+
     @PositiveOrZero
     @JsonProperty("warehouse_id")
     private Integer warehouseId;
