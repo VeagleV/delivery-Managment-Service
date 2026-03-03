@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 @FeignClient(name = "algorithm-Service")
 public interface AlgoService {
-    @PostMapping("/api/algo/startAlgorithm")
+    @PostMapping("/algo/startAlgorithm")
     ResponseEntity<?> startAlgorithm(AlgoRequest algoRequest);
 }
