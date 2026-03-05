@@ -92,7 +92,7 @@ public class RequestController {
     ) {
         RequestResponse request = requestService.updateRequestStatus(requestId, Status.COMPLETED);
         if(request == null) return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        requestService.confirmTransit(routeId);
+        requestService.confirmTransit(routeId, requestId);
         return new ResponseEntity<>(request, HttpStatus.NO_CONTENT);
     }
 

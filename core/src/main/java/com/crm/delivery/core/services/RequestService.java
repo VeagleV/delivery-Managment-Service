@@ -150,12 +150,15 @@ public class RequestService {
         transportService.setInTransitStatus(transports);
     }
 
-    public void confirmTransit(Integer routeId) {
+    public void confirmTransit(Integer routeId, Integer requestId) {
         List<SpanResponse> spanResponseList = algoService.getSpanByRouteId(routeId).getBody();
-        List<ItemListRequest> changeQuantity = spanResponseList.stream().map(ItemListMapper::createItemListIncResponse).toList();
+        List<ItemListRequest> changeQuantity = new ArrayList<>(spanResponseList.stream().map(ItemListMapper::createItemListIncResponse).toList());
+        Integer warehouseId = requestRepository.findById(requestId).get().getWarehouseId();
+        for(ItemListRequest itemListRequest : changeQuantity) {
+            itemListRequest.setWarehouseId(warehouseId);
+        }
         itemListService.changeItemQuantity(changeQuantity);
         List<Integer> transports = spanResponseList.stream().map(SpanResponse::getTransportId).toList();
         transportService.setGoBackStatus(transports);
     }
-
 }
