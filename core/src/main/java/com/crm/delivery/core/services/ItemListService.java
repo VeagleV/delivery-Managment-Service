@@ -10,6 +10,6 @@ import java.util.List;
 
 @FeignClient(name = "item-Management-Service")
 public interface ItemListService {
-    @PutMapping("/items/itemsList")
+    @PutMapping("/items/itemsList/")
     ResponseEntity<?> changeItemQuantity(@RequestBody List<ItemListRequest> itemsQuantity);
 }
