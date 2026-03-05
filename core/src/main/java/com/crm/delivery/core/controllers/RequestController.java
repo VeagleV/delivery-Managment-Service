@@ -1,13 +1,10 @@
 package com.crm.delivery.core.controllers;
 
-import com.crm.delivery.core.dto.RequestRequest;
-import com.crm.delivery.core.dto.RequestResponse;
-import com.crm.delivery.core.dto.TransitRequest;
-import com.crm.delivery.core.dto.TransitResponse;
+import com.crm.delivery.core.dto.*;
 import com.crm.delivery.core.enums.Condition;
 import com.crm.delivery.core.enums.Status;
-import com.crm.delivery.core.services.RequestService;
-import com.crm.delivery.core.services.TransitService;
+import com.crm.delivery.core.mappers.ItemListMapper;
+import com.crm.delivery.core.services.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Tag(
         name = "Request Controller",
@@ -43,9 +41,9 @@ public class RequestController {
     }
 
     @GetMapping("/")
-    @Operation(summary = "Получение всех заявок", description = "Позволяет получить все заявки")
-    public ResponseEntity<List<RequestResponse>> getRequests() {
-        List<RequestResponse> responses = requestService.getAllRequests();
+    @Operation(summary = "Получение всех заявок пользователя", description = "Позволяет получить все заявки пользователя")
+    public ResponseEntity<List<RequestResponse>> getRequests(@RequestHeader(value = "X-User_Id") Integer userId) {
+        List<RequestResponse> responses = requestService.getAllRequestsByUserId(userId);
         if (responses.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
@@ -61,7 +59,6 @@ public class RequestController {
     }
 
     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //TODO: user_id потом будем получать из jwt (надеюсь)
     @PostMapping("/")
     @Operation(summary = "Создание заявки", description = "Позволяет создать заявку")
     public ResponseEntity<RequestResponse> createRequest(
@@ -73,6 +70,30 @@ public class RequestController {
         RequestResponse response = requestService.createRequest(userId, warehouseId, condition, file);
         if (response == null) return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/confirm")
+    @Operation(summary = "Подтверждение заявки")
+    public ResponseEntity<RequestResponse> confirmRequest(
+            @RequestParam("routeId") Integer routeId,
+            @RequestParam("requestId") Integer requestId
+    ){
+        RequestResponse request = requestService.updateRequestStatus(requestId, Status.DELIVERING);
+        if(request == null) return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        requestService.confirmRequest(routeId);
+        return new ResponseEntity<>(request, HttpStatus.OK);
+    }
+
+    @PostMapping("/closeRequest")
+    @Operation(summary = "Подтверждение доставки")
+    public ResponseEntity<RequestResponse> closeRequest(
+            @RequestParam("routeId") Integer routeId,
+            @RequestParam("requestId") Integer requestId
+    ) {
+        RequestResponse request = requestService.updateRequestStatus(requestId, Status.COMPLETED);
+        if(request == null) return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        requestService.confirmTransit(routeId);
+        return new ResponseEntity<>(request, HttpStatus.NO_CONTENT);
     }
 
     @Operation(summary = "Изменение статуса заявки", description = "Позволяет изменить статус заявки")

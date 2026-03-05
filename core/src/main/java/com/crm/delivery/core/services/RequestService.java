@@ -1,12 +1,10 @@
 package com.crm.delivery.core.services;
 
-import com.crm.delivery.core.dto.AlgoRequest;
-import com.crm.delivery.core.dto.RequestRequest;
-import com.crm.delivery.core.dto.RequestResponse;
-import com.crm.delivery.core.dto.ShipmentRequest;
+import com.crm.delivery.core.dto.*;
 import com.crm.delivery.core.entities.Request;
 import com.crm.delivery.core.enums.Condition;
 import com.crm.delivery.core.enums.Status;
+import com.crm.delivery.core.mappers.ItemListMapper;
 import com.crm.delivery.core.mappers.RequestMappers;
 import com.crm.delivery.core.repositories.RequestRepository;
 import org.apache.poi.hssf.usermodel.HSSFCell;
@@ -34,12 +32,16 @@ public class RequestService {
     private final RequestRepository requestRepository;
     private final ShipmentService shipmentService;
     private final AlgoService algoService;
+    private final TransportService transportService;
+    private final ItemListService itemListService;
 
     @Autowired
-    public RequestService(RequestRepository requestRepository, ShipmentService shipmentService, AlgoService algoService) {
+    public RequestService(RequestRepository requestRepository, ShipmentService shipmentService, AlgoService algoService, TransportService transportService, ItemListService itemListService) {
         this.requestRepository = requestRepository;
         this.shipmentService = shipmentService;
         this.algoService = algoService;
+        this.transportService = transportService;
+        this.itemListService = itemListService;
     }
 
     // GET-запросы
@@ -130,6 +132,30 @@ public class RequestService {
         }
 
         return shipments;
+    }
+
+    public List<RequestResponse> getAllRequestsByUserId(Integer userId) {
+        List<Request> requests = requestRepository.findAllByUserId(userId);
+        if (requests.isEmpty()) return null;
+        return  requests.stream()
+                .map(RequestMappers::createRequestResponse)
+                .collect(Collectors.toList());
+    }
+
+    public void confirmRequest(Integer routeId) {
+        List<SpanResponse> spanResponseList = algoService.getSpanByRouteId(routeId).getBody();
+        List<ItemListRequest> changeQuantity = spanResponseList.stream().map(ItemListMapper::createItemListDecResponse).toList();
+        itemListService.changeItemQuantity(changeQuantity);
+        List<Integer> transports = spanResponseList.stream().map(SpanResponse::getTransportId).toList();
+        transportService.setInTransitStatus(transports);
+    }
+
+    public void confirmTransit(Integer routeId) {
+        List<SpanResponse> spanResponseList = algoService.getSpanByRouteId(routeId).getBody();
+        List<ItemListRequest> changeQuantity = spanResponseList.stream().map(ItemListMapper::createItemListIncResponse).toList();
+        itemListService.changeItemQuantity(changeQuantity);
+        List<Integer> transports = spanResponseList.stream().map(SpanResponse::getTransportId).toList();
+        transportService.setGoBackStatus(transports);
     }
 
 }
