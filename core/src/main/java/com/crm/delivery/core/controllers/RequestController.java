@@ -30,7 +30,7 @@ import java.util.List;
         description = "Контроллер для управления заявками/транзитами"
 )
 @RestController
-@RequestMapping("</requests>")
+@RequestMapping("/requests")
 @Validated
 public class RequestController {
     private final TransitService transitService;
