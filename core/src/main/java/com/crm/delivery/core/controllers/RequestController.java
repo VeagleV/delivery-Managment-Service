@@ -30,7 +30,7 @@ import java.util.List;
         description = "Контроллер для управления заявками/транзитами"
 )
 @RestController
-@RequestMapping("/requests")
+@RequestMapping("</requests>")
 @Validated
 public class RequestController {
     private final TransitService transitService;
@@ -62,10 +62,10 @@ public class RequestController {
 
     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     //TODO: user_id потом будем получать из jwt (надеюсь)
-    @PostMapping("/{userId}")
+    @PostMapping("/")
     @Operation(summary = "Создание заявки", description = "Позволяет создать заявку")
     public ResponseEntity<RequestResponse> createRequest(
-            @PathVariable @Min(0) @Parameter(description = "Идентификатор пользователя", required = true) Integer userId ,
+            @RequestHeader(value = "X-User-Id") Integer userId,
             @RequestParam("warehouseId") Integer warehouseId,
             @RequestParam("condition") Condition condition,
             @RequestParam("file") MultipartFile file
